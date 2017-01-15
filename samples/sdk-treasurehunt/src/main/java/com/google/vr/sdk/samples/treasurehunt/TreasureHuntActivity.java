@@ -37,7 +37,36 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
-
+import com.google.vr.cardboard.TransitionView;
+import com.google.vr.cardboard.EglFactory;
+import com.google.vrtoolkit.cardboard.proto.nano.CardboardDevice;
+import com.google.vr.cardboard.ConfigUtils;
+import com.google.vr.cardboard.ContentProviderVrParamsProvider;
+import com.google.vr.cardboard.ExternalSurfaceManager;
+import com.google.vr.cardboard.PhoneParams;
+import com.google.vr.sdk.base.GvrActivity;
+import com.google.vr.cardboard.AndroidNCompat;
+import com.google.vr.ndk.base.GvrSurfaceView;
+import com.google.vr.cardboard.DisplaySynchronizer;
+import com.google.vr.ndk.base.GvrUiLayout;
+import com.google.vr.cardboard.ScanlineRacingRenderer;
+//import com.google.vr.ndk.base.VrCoreSdkClient;
+import com.google.vr.vrcore.common.api.IDaydreamListener;
+import com.google.vr.vrcore.controller.api.IControllerListener;
+import com.google.vr.cardboard.UiLayer;
+import com.google.vr.cardboard.TransitionView;
+import com.google.vr.vrcore.common.api.HeadTrackingState;
+import com.google.vr.vrcore.controller.api.ControllerEventPacket;
+import com.google.vr.vrcore.logging.api.VREventParcelable;
+import com.google.vr.vrcore.performance.api.IPerformanceService;
+import com.google.vr.cardboard.VrCoreLibraryLoader;
+import com.google.vr.ndk.base.Version;
+import com.google.vr.cardboard.VrParamsProviderFactory;
+import com.google.vr.cardboard.VrParamsProviderJni;
+import com.google.vr.internal.controller.NativeCallbacks;
+import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.GvrViewerParams;
+import com.google.vr.sdk.base.CardboardViewNativeImpl;
 /**
  * A Google VR sample application.
  *
@@ -205,7 +234,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     gvrView.setEGLConfigChooser(8, 8, 8, 8, 16, 8);
 
     gvrView.setRenderer(this);
-    gvrView.setTransitionViewEnabled(true);
+    gvrView.setTransitionViewEnabled(false);
 
     // Enable Cardboard-trigger feedback with Daydream headsets. This is a simple way of supporting
     // Daydream controller input for basic interactions using the existing Cardboard trigger API.
@@ -268,8 +297,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     cubeColors.put(WorldLayoutData.CUBE_COLORS);
     cubeColors.position(0);
 
-    ByteBuffer bbFoundColors =
-        ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
+    ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
     bbFoundColors.order(ByteOrder.nativeOrder());
     cubeFoundColors = bbFoundColors.asFloatBuffer();
     cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);

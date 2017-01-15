@@ -37,6 +37,7 @@ model {
         // Specific the particular .so files this sample links against.
         ldLibs.add("gvr")
     }
+
     android.productFlavors {
         create ("fat") {
             // This sample builds all architectures by default. Note that if you

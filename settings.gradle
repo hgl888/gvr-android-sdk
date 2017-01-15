@@ -6,8 +6,11 @@ include ':samples:sdk-controllerclient'
 include ':samples:sdk-simplepanowidget'
 include ':samples:sdk-simplevideowidget'
 include ':samples:sdk-treasurehunt'
-include ':samples:ndk-controllerpaint'
-include ':samples:ndk-treasurehunt'
+include ':samples:texture'
+
+//include ':samples:sdk-audio'
+//include ':samples:sdk-base'
+//include ':samples:sdk-common'
 
 // NDK samples are disabled by default because they need the Android NDK to be
 // installed in addition to the SDK. To build them, first extract the NDK .so
