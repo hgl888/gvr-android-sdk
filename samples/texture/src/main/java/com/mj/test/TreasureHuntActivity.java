@@ -17,14 +17,14 @@
 package com.mj.test;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.hardware.SensorManager;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.View;
+
 import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.base.Eye;
@@ -32,7 +32,6 @@ import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
-import com.mj.test.R;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,11 +40,12 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
 import javax.microedition.khronos.egl.EGLConfig;
 
 /**
  * A Google VR sample application.
- *
+ * <p>
  * <p>The TreasureHunt scene consists of a planar ground grid and a floating
  * "treasure" cube. When the user looks at the cube, the cube will turn gold.
  * While gold, the user can activate the Cardboard trigger, either directly
@@ -71,7 +71,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private static final int COORDS_PER_VERTEX = 3;
 
   // We keep the light always position just above the user.
-  private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] {0.0f, 2.0f, 0.0f, 1.0f};
+  private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[]{0.0f, 2.0f, 0.0f, 1.0f};
 
   // Convenience vector for extracting the position from a matrix via multiplication.
   private static final float[] POS_MATRIX_MULTIPLY_VEC = {0, 0, 0, 1.0f};
@@ -125,11 +125,12 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private volatile int successSourceId = GvrAudioEngine.INVALID_ID;
   private GLPanoView mPanoView = null;
   private GLTexView mTexView = null;
+  private float[] startFromSensorTransformation;
 
   /**
    * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
    *
-   * @param type The type of shader we will be creating.
+   * @param type  The type of shader we will be creating.
    * @param resId The resource ID of the raw text file about to be turned into a shader.
    * @return The shader object handler.
    */
@@ -180,7 +181,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
     initializeGvrView();
 
-
     modelCube = new float[16];
     camera = new float[16];
     view = new float[16];
@@ -189,7 +189,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     modelFloor = new float[16];
     tempPosition = new float[4];
     // Model first appears directly in front of user.
-    modelPosition = new float[] {0.0f, 0.0f, -MAX_MODEL_DISTANCE / 2.0f};
+    modelPosition = new float[]{0.0f, 0.0f, -MAX_MODEL_DISTANCE / 2.0f};
     headRotation = new float[4];
     headView = new float[16];
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -198,16 +198,14 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     gvrAudioEngine = new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
   }
 
-  public void initPanoView()
-  {
+  public void initPanoView() {
     mPanoView = new GLPanoView(this);
 //    mPanoView.setImage(R.drawable.skybox_launcher);
     mPanoView.setImage(R.drawable.setting_right);
     mPanoView.createProgram();
   }
 
-  public  void initTexView()
-  {
+  public void initTexView() {
     mTexView = new GLTexView(this);
     mTexView.init();
     mTexView.initImageTexture(this, new int[]{
@@ -227,6 +225,29 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
             R.drawable.popup_handle_0013,
             R.drawable.popup_handle_0014,
             R.drawable.popup_handle_0015});
+  }
+
+  public void onClick(View v) {
+    if (v.getId() == R.id.btn) {
+      startFromSensorTransformation = null;
+      restoration(mEye);
+    }
+  }
+
+  /**
+   * 复位
+   */
+  private void restoration(Eye eye) {
+    Log.i("restoration", "restoration");
+    if (startFromSensorTransformation == null)
+    {
+      float[] orientationRadians = SensorManager.getOrientation(eye.getEyeView(), new float[3]);
+      startFromSensorTransformation = new float[3];
+      for (int i = 0; i < 3; ++i)
+      {
+        startFromSensorTransformation[i] = (float) Math.toDegrees(orientationRadians[i]);
+      }
+    }
   }
 
   public void initializeGvrView() {
@@ -274,17 +295,11 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     Log.i(TAG, "onSurfaceChanged");
   }
 
-  /**
-   * Creates the buffers we use to store information about the 3D world.
-   *
-   * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
-   * Hence we use ByteBuffers.
-   *
-   * @param config The EGL configuration used when creating the surface.
-   */
+
   @Override
   public void onSurfaceCreated(EGLConfig config) {
     Log.i(TAG, "onSurfaceCreated");
+    firstHeadView = new float[16];
     GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
     ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
@@ -300,7 +315,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     cubeColors.position(0);
 
     ByteBuffer bbFoundColors =
-        ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
+            ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
     bbFoundColors.order(ByteOrder.nativeOrder());
     cubeFoundColors = bbFoundColors.asFloatBuffer();
     cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
@@ -369,13 +384,13 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
                 gvrAudioEngine.preloadSoundFile(OBJECT_SOUND_FILE);
                 sourceId = gvrAudioEngine.createSoundObject(OBJECT_SOUND_FILE);
                 gvrAudioEngine.setSoundObjectPosition(
-                    sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
+                        sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
                 gvrAudioEngine.playSound(sourceId, true /* looped playback */);
                 // Preload an unspatialized sound to be played on a successful trigger on the cube.
                 gvrAudioEngine.preloadSoundFile(SUCCESS_SOUND_FILE);
               }
             })
-        .start();
+            .start();
 
     updateModelPosition();
 
@@ -384,7 +399,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     initTexView();
     initPanoView();
   }
-
 
 
   /**
@@ -397,7 +411,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     // Update the sound location to match it with the new cube position.
     if (sourceId != GvrAudioEngine.INVALID_ID) {
       gvrAudioEngine.setSoundObjectPosition(
-          sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
+              sourceId, modelPosition[0], modelPosition[1], modelPosition[2]);
     }
     checkGLError("updateCubePosition");
   }
@@ -442,7 +456,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     // Update the 3d audio engine with the most recent head rotation.
     headTransform.getQuaternion(headRotation, 0);
     gvrAudioEngine.setHeadRotation(
-        headRotation[0], headRotation[1], headRotation[2], headRotation[3]);
+            headRotation[0], headRotation[1], headRotation[2], headRotation[3]);
     // Regular update call to GVR audio engine.
     gvrAudioEngine.update();
 
@@ -458,8 +472,13 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
    *
    * @param eye The eye to render. Includes all required transformations.
    */
+  private float[] firstHeadView;
+
+  private Eye mEye = null;
+
   @Override
   public void onDrawEye(Eye eye) {
+    mEye = eye;
     GLES20.glEnable(GLES20.GL_DEPTH_TEST);
     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -471,10 +490,13 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
 //    drawFloor();
 //
-//    float []tmpTmp = new float[16];
+//    if(firstHeadView[])
 //    Matrix.setIdentityM(tmpTmp, 0);
     Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
-//    Matrix.multiplyMM(view, 0, tmpTmp, 0, camera, 0);
+    if (startFromSensorTransformation != null)
+    {
+      Matrix.rotateM(view, 0, startFromSensorTransformation[2], 0, 1, 0);
+    }
     Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
     float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
     Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
@@ -482,16 +504,8 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     mTexView.drawRect(modelViewProjection);
   }
 
-  public void resetPanoView()
-  {
-//    Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
-//    Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-//    float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
-//    Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-  }
 
-  public void drawCube(Eye eye)
-  {
+  public void drawCube(Eye eye) {
     // Apply the eye transformation to the camera.
     Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
 
@@ -507,15 +521,15 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   }
 
   @Override
-  public void onFinishFrame(Viewport viewport) {}
+  public void onFinishFrame(Viewport viewport) {
+  }
 
   /**
    * Draw the cube.
-   *
+   * <p>
    * <p>We've set all of our transformation matrices. Now we simply pass them into the shader.
    */
-  public void drawCube()
-  {
+  public void drawCube() {
     GLES20.glUseProgram(cubeProgram);
 
     GLES20.glUniform3fv(cubeLightPosParam, 1, lightPosInEyeSpace, 0);
@@ -547,7 +561,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     GLES20.glDisableVertexAttribArray(cubePositionParam);
     GLES20.glDisableVertexAttribArray(cubeNormalParam);
     GLES20.glDisableVertexAttribArray(cubeColorParam);
-    
+
     checkGLError("Drawing cube");
   }
 
@@ -605,7 +619,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
   /**
    * Find a new random position for the object.
-   *
+   * <p>
    * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
    */
   protected void hideObject() {
@@ -618,7 +632,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
     float oldObjectDistance = objectDistance;
     objectDistance =
-        (float) Math.random() * (MAX_MODEL_DISTANCE - MIN_MODEL_DISTANCE) + MIN_MODEL_DISTANCE;
+            (float) Math.random() * (MAX_MODEL_DISTANCE - MIN_MODEL_DISTANCE) + MIN_MODEL_DISTANCE;
     float objectScalingFactor = objectDistance / oldObjectDistance;
     Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
     Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
@@ -650,3 +664,4 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
   }
 }
+

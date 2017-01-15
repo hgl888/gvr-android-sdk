@@ -5,7 +5,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-
     <com.google.vr.sdk.base.GvrView
         android:id="@+id/gvr_view"
         android:layout_width="fill_parent"
@@ -13,4 +12,10 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:id="@+id/btn"
+        android:text="Restoration"/>
 </RelativeLayout>
