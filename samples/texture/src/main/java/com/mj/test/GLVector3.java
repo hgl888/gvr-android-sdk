@@ -1,4 +1,4 @@
-package com.google.vr.sdk.samples.treasurehunt;
+package com.mj.test;
 
 public class GLVector3 {
 	public float x;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.vr.sdk.samples.treasurehunt;
+package com.mj.test;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,6 +32,8 @@ import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
+import com.mj.test.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -307,37 +309,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
     cubeNormals.position(0);
 
-    // make a floor
-    ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
-    bbFloorVertices.order(ByteOrder.nativeOrder());
-    floorVertices = bbFloorVertices.asFloatBuffer();
-    floorVertices.put(WorldLayoutData.FLOOR_COORDS);
-    floorVertices.position(0);
-
-    ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
-    bbFloorNormals.order(ByteOrder.nativeOrder());
-    floorNormals = bbFloorNormals.asFloatBuffer();
-    floorNormals.put(WorldLayoutData.FLOOR_NORMALS);
-    floorNormals.position(0);
-
-    ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
-    bbFloorColors.order(ByteOrder.nativeOrder());
-    floorColors = bbFloorColors.asFloatBuffer();
-    floorColors.put(WorldLayoutData.FLOOR_COLORS);
-    floorColors.position(0);
-
-    // make a rect
-    ByteBuffer bbRectVertices = ByteBuffer.allocateDirect(WorldLayoutData.RECT_COORDS.length * 4);
-    bbFloorVertices.order(ByteOrder.nativeOrder());
-    rectVertices = bbFloorVertices.asFloatBuffer();
-    rectVertices.put(WorldLayoutData.RECT_COORDS);
-    rectVertices.position(0);
-
-    ByteBuffer bbRectNormals = ByteBuffer.allocateDirect(WorldLayoutData.RECT_TEXTURECOODS.length * 4);
-    bbFloorNormals.order(ByteOrder.nativeOrder());
-    rectTextureCoords = bbFloorNormals.asFloatBuffer();
-    rectTextureCoords.put(WorldLayoutData.RECT_TEXTURECOODS);
-    rectTextureCoords.position(0);
 
     int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
     int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);

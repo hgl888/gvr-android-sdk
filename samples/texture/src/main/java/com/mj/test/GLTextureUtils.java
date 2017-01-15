@@ -1,4 +1,4 @@
-package com.google.vr.sdk.samples.treasurehunt;
+package com.mj.test;
 
 import java.io.IOException;
 import java.io.InputStream;
