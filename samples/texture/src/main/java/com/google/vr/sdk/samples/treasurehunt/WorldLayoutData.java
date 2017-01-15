@@ -221,6 +221,7 @@ public final class WorldLayoutData {
       0.0f, -1.0f, 0.0f
   };
 
+
   // The grid lines on the floor are rendered procedurally and large polygons cause floating point
   // precision problems on some architectures. So we split the floor into 4 quadrants.
   public static final float[] FLOOR_COORDS = new float[] {

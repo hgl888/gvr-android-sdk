@@ -28,7 +28,7 @@ public class GLPanoView {
     public static final int PLAY_TYPE_3D_LR = 0x1; //左右3d
     public static final int PLAY_TYPE_3D_TB = 0x2; //上下3d
 
-    private static final int RENDER_TYPE_COUNT = 2;
+    private static final int RENDER_TYPE_COUNT = 1;
     private static final int SCENE_TYPE_COUNT = 1;
 
     private static final int PLAY_UV_2D = 0x0;
@@ -324,7 +324,7 @@ public class GLPanoView {
         }
     }
 
-    public void onBeforeDraw(boolean isLeft) {
+    public void onBeforeDraw(float[] mat, boolean isLeft) {
 
         if (mRenderType == RENDER_TYPE_VIDEO && !mVideoPrepared){
             return;
@@ -388,9 +388,9 @@ public class GLPanoView {
                     GLES30.GL_TEXTURE_2D, mTextureId);
         }
 
-        //GLES30.glUniformMatrix4fv(muMVPMatrixHandles[mRenderType], 1, false, getMatrixState().getFinalMatrix(), 0);
-        //GLES30.glUniform1f(muAlphaHandles[mRenderType], getAlpha());
-        //GLES30.glUniform1f(muMaskHandles[mRenderType], getMask());
+        GLES30.glUniformMatrix4fv(muMVPMatrixHandles[mRenderType], 1, false, mat, 0);
+        GLES30.glUniform1f(muAlphaHandles[mRenderType], 1.0f);
+        GLES30.glUniform1f(muMaskHandles[mRenderType], 1.0f);
 
         vertexVBO();
 
@@ -429,7 +429,7 @@ public class GLPanoView {
     public void draw() {
     }
 
-    private void createProgram(){
+    public void createProgram(){
         String[] fs = new String[]{GLShaderManager.FRAGMENT_SENCE_IMAGE, GLShaderManager.FRAGMENT_SENCE_VIDEO};
         for (int i = 0; i < RENDER_TYPE_COUNT; i++){
             int vertexShader    = GLShaderManager.loadShader(GLES30.GL_VERTEX_SHADER, GLShaderManager.VERTEX_SENCE);

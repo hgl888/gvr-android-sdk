@@ -87,9 +87,9 @@ public class OrientationView extends GLSurfaceView {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-      SensorManager.getRotationMatrixFromVector(phoneInWorldSpaceMatrix, event.values);
-      if (startFromSensorTransformation == null) {
-        // Android's hardware uses radians, but OpenGL uses degrees. Android uses
+
+        SensorManager.getRotationMatrixFromVector(phoneInWorldSpaceMatrix, event.values);
+        if (startFromSensorTransformation == null) {    // Android's hardware uses radians, but OpenGL uses degrees. Android uses
         // [yaw, pitch, roll] for the order of elements in the orientation array.
         float[] orientationRadians =
             SensorManager.getOrientation(phoneInWorldSpaceMatrix, new float[3]);

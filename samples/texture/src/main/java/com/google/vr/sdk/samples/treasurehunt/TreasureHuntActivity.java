@@ -62,7 +62,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private static final float Z_FAR = 100.0f;
 
   private static final float CAMERA_Z = 0.01f;
-  private static final float TIME_DELTA = 0.3f;
+  private static final float TIME_DELTA = 0.5f;
 
   private static final float YAW_LIMIT = 0.12f;
   private static final float PITCH_LIMIT = 0.12f;
@@ -219,7 +219,9 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   public void initPanoView()
   {
     mPanoView = new GLPanoView(this);
-    mPanoView.setImage(R.drawable.skybox_launcher);
+//    mPanoView.setImage(R.drawable.skybox_launcher);
+    mPanoView.setImage(R.drawable.setting_right);
+    mPanoView.createProgram();
   }
 
   public void initializeGvrView() {
@@ -533,12 +535,27 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     drawCube(eye);
 
     // Set modelView for the floor, so we draw floor in the correct location
-  //  Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-  //  Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+
 //    drawFloor();
 //
 //    drawRect();
-    mPanoView.onBeforeDraw(true);
+
+//    float []tmpTmp = new float[16];
+//    Matrix.setIdentityM(tmpTmp, 0);
+    Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
+//    Matrix.multiplyMM(view, 0, tmpTmp, 0, camera, 0);
+    Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
+    float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
+    Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+    mPanoView.onBeforeDraw(modelViewProjection, true);
+  }
+
+  public void resetPanoView()
+  {
+//    Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
+//    Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
+//    float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
+//    Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
   }
 
   public void drawCube(Eye eye)
@@ -609,7 +626,8 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
    * position of the light, so if we rewrite our code to draw the floor first, the lighting might
    * look strange.
    */
-  public void drawFloor() {
+  public void drawFloor()
+  {
     GLES20.glUseProgram(floorProgram);
 
     // Set ModelView, MVP, position, normals, and color.
