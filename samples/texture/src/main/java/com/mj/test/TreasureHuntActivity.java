@@ -68,7 +68,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
   private static final float YAW_LIMIT = 0.12f;
   private static final float PITCH_LIMIT = 0.12f;
-
   private static final int COORDS_PER_VERTEX = 3;
 
   // We keep the light always position just above the user.
@@ -85,12 +84,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
   private final float[] lightPosInEyeSpace = new float[4];
 
-  // rect
-  private FloatBuffer rectVertices;
-  private FloatBuffer rectTextureCoords;
-
-  private int mTextureId = -1;
-
   private FloatBuffer floorVertices;
   private FloatBuffer floorColors;
   private FloatBuffer floorNormals;
@@ -101,8 +94,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private FloatBuffer cubeNormals;
 
   private int cubeProgram;
-  private int floorProgram;
-  private int rectProgram;
+//  private int floorProgram;
 
   private int cubePositionParam;
   private int cubeNormalParam;
@@ -112,19 +104,6 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private int cubeModelViewProjectionParam;
   private int cubeLightPosParam;
 
-  private int floorPositionParam;
-  private int floorNormalParam;
-  private int floorColorParam;
-  private int floorModelParam;
-  private int floorModelViewParam;
-  private int floorModelViewProjectionParam;
-  private int floorLightPosParam;
-
-  private int rectPositionParam;
-  private int rectAlphaParam;
-  private int rectMaskPosParam;
-  private int rectModelViewProjectionParam;
-  private int rectTextureParam;
 
   private float[] camera;
   private float[] view;
@@ -145,6 +124,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
   private volatile int sourceId = GvrAudioEngine.INVALID_ID;
   private volatile int successSourceId = GvrAudioEngine.INVALID_ID;
   private GLPanoView mPanoView = null;
+  private GLTexView mTexView = null;
 
   /**
    * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
@@ -224,6 +204,29 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 //    mPanoView.setImage(R.drawable.skybox_launcher);
     mPanoView.setImage(R.drawable.setting_right);
     mPanoView.createProgram();
+  }
+
+  public  void initTexView()
+  {
+    mTexView = new GLTexView(this);
+    mTexView.init();
+    mTexView.initImageTexture(this, new int[]{
+            R.drawable.popup_handle_0000,
+            R.drawable.popup_handle_0001,
+            R.drawable.popup_handle_0002,
+            R.drawable.popup_handle_0003,
+            R.drawable.popup_handle_0004,
+            R.drawable.popup_handle_0005,
+            R.drawable.popup_handle_0006,
+            R.drawable.popup_handle_0007,
+            R.drawable.popup_handle_0008,
+            R.drawable.popup_handle_0009,
+            R.drawable.popup_handle_0010,
+            R.drawable.popup_handle_0011,
+            R.drawable.popup_handle_0012,
+            R.drawable.popup_handle_0013,
+            R.drawable.popup_handle_0014,
+            R.drawable.popup_handle_0015});
   }
 
   public void initializeGvrView() {
@@ -309,12 +312,10 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
     cubeNormals.position(0);
 
-
     int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
     int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
     int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
-    int imageVertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.image_vertex);
-    int imageFragmentShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.image_fragment);
+
 
     cubeProgram = GLES20.glCreateProgram();
     GLES20.glAttachShader(cubeProgram, vertexShader);
@@ -335,41 +336,24 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
     checkGLError("Cube program params");
 
-    floorProgram = GLES20.glCreateProgram();
-    GLES20.glAttachShader(floorProgram, vertexShader);
-    GLES20.glAttachShader(floorProgram, gridShader);
-    GLES20.glLinkProgram(floorProgram);
-    GLES20.glUseProgram(floorProgram);
+//    floorProgram = GLES20.glCreateProgram();
+//    GLES20.glAttachShader(floorProgram, vertexShader);
+//    GLES20.glAttachShader(floorProgram, gridShader);
+//    GLES20.glLinkProgram(floorProgram);
+//    GLES20.glUseProgram(floorProgram);
 
     checkGLError("Floor program");
 
-    floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
-    floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
-    floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
-    floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
-
-    floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
-    floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
-    floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
+//    floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
+//    floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
+//    floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
+//    floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
+//
+//    floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
+//    floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
+//    floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
 
     checkGLError("Floor program params");
-
-    rectProgram = GLES20.glCreateProgram();
-    GLES20.glAttachShader(rectProgram, imageVertexShader);
-    GLES20.glAttachShader(rectProgram, imageFragmentShader);
-    GLES20.glLinkProgram(rectProgram);
-    GLES20.glUseProgram(rectProgram);
-
-    checkGLError("rect program");
-
-    rectModelViewProjectionParam = GLES20.glGetUniformLocation(rectProgram, "uMVPMatrix");
-    rectAlphaParam = GLES20.glGetUniformLocation(rectProgram, "uAlpha");
-    rectMaskPosParam = GLES20.glGetUniformLocation(rectProgram, "uMask");
-
-    rectPositionParam = GLES20.glGetAttribLocation(rectProgram, "vPosition");
-    rectTextureParam = GLES20.glGetAttribLocation(rectProgram, "inputTextureCoordinate");
-
-    checkGLError("rect program params");
 
     Matrix.setIdentityM(modelFloor, 0);
     Matrix.translateM(modelFloor, 0, 0, 0, 0); // Floor appears below user.
@@ -397,33 +381,11 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
     checkGLError("onSurfaceCreated");
 
-    mTextureId = initImageTexture(this, R.drawable.vr_icon);
+    initTexView();
     initPanoView();
   }
 
-  public static int initImageTexture(Context context, int drawableId) {
-    //通过输入流加载图片===============begin===================
-    InputStream is = context.getResources().openRawResource(drawableId);
-    Bitmap bitmap;
-    try
-    {
-      bitmap = BitmapFactory.decodeStream(is);
-    }
-    finally
-    {
-      try
-      {
-        is.close();
-      }
-      catch(IOException e)
-      {
-        e.printStackTrace();
-      }
-    }
-    //通过输入流加载图片===============end=====================
 
-    return initImageTexture(context, bitmap, true);
-  }
 
   /**
    * Updates the cube model position.
@@ -470,7 +432,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
    */
   @Override
   public void onNewFrame(HeadTransform headTransform) {
-    setCubeRotation();
+//    setCubeRotation();
 
     // Build the camera matrix and apply it to the ModelView.
     Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, -8f, 0.0f, 1.0f, 0.0f);
@@ -503,14 +465,12 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
 
     checkGLError("colorParam");
 
-    drawCube(eye);
+//    drawCube(eye);
 
     // Set modelView for the floor, so we draw floor in the correct location
 
 //    drawFloor();
 //
-//    drawRect();
-
 //    float []tmpTmp = new float[16];
 //    Matrix.setIdentityM(tmpTmp, 0);
     Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
@@ -519,6 +479,7 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
     float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
     Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
     mPanoView.onBeforeDraw(modelViewProjection, true);
+    mTexView.drawRect(modelViewProjection);
   }
 
   public void resetPanoView()
@@ -597,93 +558,33 @@ public class TreasureHuntActivity extends GvrActivity implements GvrView.StereoR
    * position of the light, so if we rewrite our code to draw the floor first, the lighting might
    * look strange.
    */
-  public void drawFloor()
-  {
-    GLES20.glUseProgram(floorProgram);
+//  public void drawFloor()
+//  {
+//    GLES20.glUseProgram(floorProgram);
+//
+//    // Set ModelView, MVP, position, normals, and color.
+//    GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
+//    GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
+//    GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
+//    GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
+//    GLES20.glVertexAttribPointer(
+//        floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
+//    GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
+//    GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
+//
+//    GLES20.glEnableVertexAttribArray(floorPositionParam);
+//    GLES20.glEnableVertexAttribArray(floorNormalParam);
+//    GLES20.glEnableVertexAttribArray(floorColorParam);
+//
+//    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 24);
+//
+//    GLES20.glDisableVertexAttribArray(floorPositionParam);
+//    GLES20.glDisableVertexAttribArray(floorNormalParam);
+//    GLES20.glDisableVertexAttribArray(floorColorParam);
+//
+//    checkGLError("drawing floor");
+//  }
 
-    // Set ModelView, MVP, position, normals, and color.
-    GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
-    GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
-    GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
-    GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
-    GLES20.glVertexAttribPointer(
-        floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
-    GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
-    GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
-
-    GLES20.glEnableVertexAttribArray(floorPositionParam);
-    GLES20.glEnableVertexAttribArray(floorNormalParam);
-    GLES20.glEnableVertexAttribArray(floorColorParam);
-
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 24);
-
-    GLES20.glDisableVertexAttribArray(floorPositionParam);
-    GLES20.glDisableVertexAttribArray(floorNormalParam);
-    GLES20.glDisableVertexAttribArray(floorColorParam);
-
-    checkGLError("drawing floor");
-  }
-
-  public static int initImageTexture(Context context, Bitmap bm, boolean isRecycle) {
-    if (bm == null) {
-      return -1;
-    }
-
-    //生成纹理ID
-    int[] textures = new int[1];
-
-    GLES20.glGenTextures
-            (
-                    1,          //产生的纹理id的数量
-                    textures,   //纹理id的数组
-                    0           //偏移量
-            );
-
-
-      GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-      GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,GLES20.GL_LINEAR);
-      GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,GLES20.GL_TEXTURE_MAG_FILTER,GLES20.GL_LINEAR);
-      GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_CLAMP_TO_EDGE);
-      GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_CLAMP_TO_EDGE);
-      //实际加载纹理
-      GLUtils.texImage2D
-              (
-                      GLES20.GL_TEXTURE_2D,   //纹理类型，在OpenGL ES中必须为GL10.GL_TEXTURE_2D
-                      0, 					  //纹理的层次，0表示基本图像层，可以理解为直接贴图
-                      bm, 			  //纹理图像
-                      0					  //纹理边框尺寸
-              );
-
-    if (isRecycle){
-      bm.recycle(); 		  //纹理加载成功后释放图片
-    }
-    return textures[0];
-  }
-
-  public void drawRect() {
-    GLES20.glUseProgram(rectProgram);
-
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
-
-    // Set ModelView, MVP, position, normals, and color.
-    GLES20.glUniformMatrix4fv(rectModelViewProjectionParam, 1, false, modelViewProjection, 0);
-    GLES20.glUniform1f(rectAlphaParam, 1.0f);
-    GLES20.glUniform1f(rectMaskPosParam, 1.0f);
-
-    GLES20.glVertexAttribPointer(rectPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, rectVertices);
-    GLES20.glVertexAttribPointer(rectTextureParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, rectTextureCoords);
-
-    GLES20.glEnableVertexAttribArray(rectPositionParam);
-    GLES20.glEnableVertexAttribArray(rectTextureParam);
-
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-
-    GLES20.glDisableVertexAttribArray(rectPositionParam);
-    GLES20.glDisableVertexAttribArray(rectTextureParam);
-
-    checkGLError("drawing rect");
-  }
 
   /**
    * Called when the Cardboard trigger is pulled.

@@ -227,8 +227,6 @@ public final class WorldLayoutData {
           -1, 1, -2,
           -1, -1, -2,
           1, 1, -2,
-          1, 1, -2,
-          -1, -1, -2,
           1, -1, -2
   };
 
@@ -236,8 +234,6 @@ public final class WorldLayoutData {
           0.0f, 0.0f,
           0.0f, 1.0f,
           1.0f, 0.0f,
-          1.0f, 0.0f,
-          0.0f, 1.0f,
           1.0f, 1.0f,
   };
 }
